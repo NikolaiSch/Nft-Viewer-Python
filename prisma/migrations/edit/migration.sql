@@ -1,0 +1,2 @@
+ALTER TABLE fullz
+ADD COLUMN data VARCHAR;

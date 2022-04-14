@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model fullz {
+  id    Int     @id @default(autoincrement())
+  owner BigInt?
+  dob   String? @db.VarChar
+  bin   String? @db.VarChar
+  data  String? @db.VarChar
+}
+
+model users {
+  id      Int     @id @default(autoincrement())
+  balance Float?
+  chatid  String? @unique @db.VarChar
+}
+
+model payments {
+  id       Int     @id @default(autoincrement())
+  chatid   BigInt?
+  amount   Int?
+  currency String? @db.VarChar
+  np_id    String? @unique @db.VarChar
+  status   String? @db.VarChar
+}
