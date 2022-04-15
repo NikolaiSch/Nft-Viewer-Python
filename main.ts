@@ -123,7 +123,7 @@ bot.onText(/\/topup (eth|btc|ltc) (\d+)/, async (msg, match) => {
         price_currency: "gbp",
         pay_currency: currency,
         order_id: msg.chat.id.toString(),
-        ipn_callback_url: "http://dbfull.herokuapp.com/ipn"
+        ipn_callback_url: "http://dbful.herokuapp.com/ipn"
     });
 
     if (!("payment_status" in payment)) {

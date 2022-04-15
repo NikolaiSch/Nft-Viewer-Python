@@ -14,5 +14,14 @@ CREATE TABLE IF NOT EXISTS fullz (
     id SERIAL PRIMARY KEY,
     owner BIGINT,
     dob VARCHAR,
-    bin VARCHAR
+    bin VARCHAR,
+    data VARCHAR
+);
+
+
+CREATE TABLE IF NOT EXISTS payments (
+    id SERIAL PRIMARY KEY,
+    chatid BIGINT,
+    amount INT,
+    currency VARCHAR
 );
