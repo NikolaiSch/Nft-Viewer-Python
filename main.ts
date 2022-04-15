@@ -5,7 +5,6 @@ import config from "./config";
 import { PrismaClient, users } from "@prisma/client";
 import NowPayments from "@nowpaymentsio/nowpayments-api-js";
 import { CreatePaymentReturn } from "@nowpaymentsio/nowpayments-api-js/src/actions/create-payment";
-import { GetPaymentStatusReturn } from "@nowpaymentsio/nowpayments-api-js/src/actions/get-payment-status";
 var AsciiTable = require('ascii-table')
 
 
@@ -111,7 +110,8 @@ bot.onText(/\/topup (eth|btc|ltc) (\d+)/, async (msg, match) => {
         price_amount: amount,
         price_currency: "gbp",
         pay_currency: currency,
-        order_id: msg.chat.id.toString()
+        order_id: msg.chat.id.toString(),
+        ipn_callback_url: "http://dbfull.herokuapp.com/ipn"
     });
 
     if (payment instanceof Error) {
@@ -130,56 +130,6 @@ bot.onText(/\/topup (eth|btc|ltc) (\d+)/, async (msg, match) => {
         bot.sendMessage(msg.chat.id, `Amount: ${payment.pay_amount} ${payment.pay_currency.toUpperCase()}\nAddress: ${payment.pay_address}`)
     }
 });
-
-bot.onText(/\/paymentStatus/, async (msg: TG.Message) => {
-    let payments = await prisma.payments.findMany({
-        where: {
-            chatid: msg.chat.id
-        }
-    })
-    let table = new AsciiTable()
-    table.setHeading("status", "paid")
-    let a: string[][] = [];
-    let z = 1;
-    payments.forEach(async (p) => {
-        z++
-        let status = await NP.getPaymentStatus({ payment_id: p.np_id! })
-        status = <GetPaymentStatusReturn>status
-        if (status.payment_status == "waiting" || status.payment_status == "confirming") {
-            table.addRow("test", "test")
-        } else if (status.payment_status == "finished" || status.payment_status == "confirmed") {
-            let x = await prisma.payments.findUnique({
-                where: {
-                    np_id: status.order_id
-                }
-            })
-            await prisma.payments.delete({
-                where: {
-                    np_id: status.order_id
-                }
-            })
-            let am = x?.amount as number
-            await prisma.users.update({
-                data: {
-                    balance: {
-                        increment: am
-                    }
-                },
-                where: {
-                    chatid: msg.chat.id.toString()
-                }
-            })
-            bot.sendMessage(msg.chat.id, `Added £${am} to your account`)
-        }
-
-        if (z == payments.length - 1) {
-            bot.sendMessage(msg.chat.id, `<pre>${table.toString()}</pre>`, { parse_mode: "HTML" })
-        }
-    })
-
-
-})
-
 
 bot.onText(/\/addBalance (\d+) (\d+)/, async (msg, match) => {
     if (msg.chat.id == config.bot.admin) {
