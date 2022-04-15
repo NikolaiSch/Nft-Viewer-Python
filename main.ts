@@ -2,7 +2,7 @@ console.log("INITIALISED");
 
 import TG from "node-telegram-bot-api";
 import config from "./config";
-import { PrismaClient, users } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import NowPayments from "@nowpaymentsio/nowpayments-api-js";
 import { CreatePaymentReturn } from "@nowpaymentsio/nowpayments-api-js/src/actions/create-payment";
 var AsciiTable = require('ascii-table')
@@ -16,7 +16,7 @@ const bot = new TG(config.bot.tg_api, { polling: true });
 
 
 bot.onText(/\/start/, async (msg) => {
-    const x = await prisma.users.upsert({
+    await prisma.users.upsert({
         create: {
             balance: 0,
             chatid: msg.chat.id.toString(),
@@ -97,20 +97,22 @@ bot.onText(/\/buy (\d+)/, async (msg, match) => {
     }
 });
 
-bot.onText(/\/sendToAll (.+)/, async (_, match) => {
-    const x = await prisma.users.findMany();
-    const text = match?.slice(1)!;
-    console.log(x)
-    x.forEach(async (a) => {
-        try {
-            if (a.chatid?.length! >= 8) {
-                console.log(a)
-                await bot.sendMessage(Number(a.chatid), text.join(" ")!)
+bot.onText(/\/sendToAll (.+)/, async (msg, match) => {
+    if (msg.chat.id == config.bot.admin) {
+        const x = await prisma.users.findMany();
+        const text = match?.slice(1)!;
+        console.log(x)
+        x.forEach(async (a) => {
+            try {
+                if (a.chatid?.length! >= 8) {
+                    console.log(a)
+                    await bot.sendMessage(Number(a.chatid), text.join(" ")!)
+                }
+            } catch {
+                console.log("Error: sendToAll")
             }
-        } catch {
-            console.log("Error: sendToAll")
-        }
-    });
+        });
+    }
 });
 
 bot.onText(/\/topup (eth|btc|ltc) (\d+)/, async (msg, match) => {
