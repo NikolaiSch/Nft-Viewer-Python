@@ -6,9 +6,10 @@ import config from "./config"
 const prisma = new PrismaClient({
     errorFormat: "pretty",
 });
-const bot = new TG(config.bot.tg_api, { polling: true });
+const bot = new TG(config.bot.tg_api);
 let app = express()
-let port = process.env.PORT || 3001;
+app.use(express.json())
+let port = process.env.PORT || 3000;
 
 app.get('/add', async (req, res) => {
     await prisma.fullz.create({
@@ -22,19 +23,25 @@ app.get('/add', async (req, res) => {
     res.send("true")
 })
 
-app.get('/ipn', async (req) => {
+app.post('/ipn', async (req, res) => {
     if (req.body.payment_status == "finished") {
-        prisma.users.update({
+        console.log(req.body)
+        let x = await prisma.users.update({
             data: {
                 balance: {
-                    increment: req.body.price_amount
+                    increment: parseFloat(req.body.price_amount)
                 }
             },
             where: {
                 chatid: req.body.order_id
             }
         })
+        res.status(200).json({ status: true, message: x })
+        bot.sendMessage(parseInt(x.chatid!), `Your balance has been updated by ${req.body.price_amount}`)
+    } else {
+        bot.sendMessage(parseInt(req.body.order_id), `The current status of your topup is now: ${req.body.payment_status}`)
     }
+
 })
 
 app.listen(port)

@@ -26,7 +26,7 @@ bot.onText(/\/start/, async (msg) => {
         },
         update: {},
     });
-    bot.sendMessage(
+    await bot.sendMessage(
         msg.chat.id,
         "You have successfully initialised your account!"
     );
@@ -38,7 +38,7 @@ bot.onText(/\/myBalance/, async (msg) => {
             chatid: msg.chat.id.toString(),
         },
     });
-    bot.sendMessage(msg.chat.id, `Your current balance is £${x?.balance}`);
+    await bot.sendMessage(msg.chat.id, `Your current balance is £${x?.balance}`);
 });
 
 bot.onText(/\/list/, async (msg) => {
@@ -50,7 +50,7 @@ bot.onText(/\/list/, async (msg) => {
     let table = new AsciiTable()
     table.setHeading("id", "bin", "dob")
     x.forEach((a) => table.addRow(a.id, a.bin, a.dob))
-    bot.sendMessage(msg.chat.id, `<pre>${table.toString()}</pre>`, { parse_mode: "HTML" });
+    await bot.sendMessage(msg.chat.id, `<pre>${table.toString()}</pre>`, { parse_mode: "HTML" });
 });
 
 bot.onText(/\/bin (\d\d\d\d\d\d)/, async (msg, match) => {
@@ -63,7 +63,7 @@ bot.onText(/\/bin (\d\d\d\d\d\d)/, async (msg, match) => {
     let table = new AsciiTable()
     table.setHeading("id", "bin", "dob")
     x.forEach((a) => table.addRow(a.id, a.bin, a.dob))
-    bot.sendMessage(msg.chat.id, `<pre>${table.toString()}</pre>`, { parse_mode: "HTML" });
+    await bot.sendMessage(msg.chat.id, `<pre>${table.toString()}</pre>`, { parse_mode: "HTML" });
 });
 
 bot.onText(/\/buy (\d+)/, async (msg, match) => {
@@ -91,16 +91,26 @@ bot.onText(/\/buy (\d+)/, async (msg, match) => {
                 id: parseInt(match![1])
             }
         })
-        bot.sendMessage(msg.chat.id, `<pre>${fullz.data}</pre>`, { parse_mode: "HTML" });
+        await bot.sendMessage(msg.chat.id, `<pre>${fullz.data}</pre>`, { parse_mode: "HTML" });
     } else {
-        bot.sendMessage(msg.chat.id, `Not enough balance to buy this. ${config.bot.price} is needed to purchase. Use /topup btc 40 or /topup eth 40`)
+        await bot.sendMessage(msg.chat.id, `Not enough balance to buy this. ${config.bot.price} is needed to purchase. Use /topup btc 40 or /topup eth 40`)
     }
 });
 
 bot.onText(/\/sendToAll (.+)/, async (_, match) => {
     const x = await prisma.users.findMany();
     const text = match?.slice(1)!;
-    x.forEach((a) => bot.sendMessage(Number(a?.chatid), text?.join(" ")!));
+    console.log(x)
+    x.forEach(async (a) => {
+        try {
+            if (a.chatid?.length! >= 8) {
+                console.log(a)
+                await bot.sendMessage(Number(a.chatid), text.join(" ")!)
+            }
+        } catch {
+            console.log("Error: sendToAll")
+        }
+    });
 });
 
 bot.onText(/\/topup (eth|btc|ltc) (\d+)/, async (msg, match) => {
@@ -114,8 +124,8 @@ bot.onText(/\/topup (eth|btc|ltc) (\d+)/, async (msg, match) => {
         ipn_callback_url: "http://dbfull.herokuapp.com/ipn"
     });
 
-    if (payment instanceof Error) {
-        bot.sendMessage(msg.chat.id, `Error: ${payment.message}`)
+    if (!("payment_status" in payment)) {
+        await bot.sendMessage(msg.chat.id, `Error: ${payment.message}`)
     } else {
         payment = <CreatePaymentReturn>payment
         await prisma.payments.create({
@@ -127,7 +137,7 @@ bot.onText(/\/topup (eth|btc|ltc) (\d+)/, async (msg, match) => {
                 status: "waiting"
             },
         });
-        bot.sendMessage(msg.chat.id, `Amount: ${payment.pay_amount} ${payment.pay_currency.toUpperCase()}\nAddress: ${payment.pay_address}`)
+        await bot.sendMessage(msg.chat.id, `Amount: ${payment.pay_amount} ${payment.pay_currency.toUpperCase()}\nAddress: ${payment.pay_address}`)
     }
 });
 
@@ -143,11 +153,11 @@ bot.onText(/\/addBalance (\d+) (\d+)/, async (msg, match) => {
                 chatid: match![2]
             }
         })
-        bot.sendMessage(msg.chat.id, "Success")
+        await bot.sendMessage(msg.chat.id, "Success")
     }
 });
 
 bot.onText(/\/id/, async (msg) => {
-    bot.sendMessage(msg.chat.id, msg.chat.id.toString())
+    await bot.sendMessage(msg.chat.id, msg.chat.id.toString())
 });
 
