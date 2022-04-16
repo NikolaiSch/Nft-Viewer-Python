@@ -28,7 +28,17 @@ bot.onText(/\/start/, async (msg) => {
     });
     await bot.sendMessage(
         msg.chat.id,
-        "You have successfully initialised your account!"
+        `To use this bot, you can use the following commands:
+        
+        /list - this is to view all fullz
+        /bin 465942 - view fullz with 465942 bin, works for any 6 digit bin
+        /buy 10 - buy the fullz with id 10 from the list (this will cost ${config.bot.price})
+        
+        /topup eth|btc|ltc amount - this will topup with whatever crypto you choose, FOR EXAMPLE:
+        /topup eth 40 - topup £40 with ethereum and will be credited to your account once confirmed
+        
+        /myBalance - get the balance of your account
+        /id - get your account id`
     );
 });
 
@@ -49,8 +59,13 @@ bot.onText(/\/list/, async (msg) => {
     });
     let table = new AsciiTable()
     table.setHeading("id", "bin", "dob")
-    x.forEach((a) => table.addRow(a.id, a.bin, a.dob))
-    await bot.sendMessage(msg.chat.id, `<pre>${table.toString()}</pre>`, { parse_mode: "HTML" });
+    if (x.length != 0) {
+        x.forEach((a) => table.addRow(a.id, a.bin, a.dob))
+        await bot.sendMessage(msg.chat.id, `<pre>${table.toString()}</pre>`, { parse_mode: "HTML" });
+    } else {
+        await bot.sendMessage(msg.chat.id, `Currently no fullz in stock`, { parse_mode: "HTML" });
+    }
+
 });
 
 bot.onText(/\/bin (\d\d\d\d\d\d)/, async (msg, match) => {
@@ -60,10 +75,14 @@ bot.onText(/\/bin (\d\d\d\d\d\d)/, async (msg, match) => {
             bin: match?.[1]
         },
     });
-    let table = new AsciiTable()
-    table.setHeading("id", "bin", "dob")
-    x.forEach((a) => table.addRow(a.id, a.bin, a.dob))
-    await bot.sendMessage(msg.chat.id, `<pre>${table.toString()}</pre>`, { parse_mode: "HTML" });
+    if (x.length != 0) {
+        let table = new AsciiTable()
+        table.setHeading("id", "bin", "dob")
+        x.forEach((a) => table.addRow(a.id, a.bin, a.dob))
+        await bot.sendMessage(msg.chat.id, `<pre>${table.toString()}</pre>`, { parse_mode: "HTML" });
+    } else {
+        await bot.sendMessage(msg.chat.id, `No fullz with bin ${match?.[1]} in stock currently. Check back later`, { parse_mode: "HTML" });
+    }
 });
 
 bot.onText(/\/buy (\d+)/, async (msg, match) => {
