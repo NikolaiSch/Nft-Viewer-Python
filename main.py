@@ -128,7 +128,7 @@ def randomise():
     ttk.Button(
         frame, command=save_multiple, padding=20, width=20, text="Save Multiple!"
     ).grid(column=3, row=0)
-    x = Image.open("assets/blank.png").resize((300, 300))
+    x = Image.open("./assets/blank.png").resize((300, 300))
     for i in l:
         a = Image.open(art_dict[i]).resize((300, 300))
         x.paste(a, (0, 0), a)
@@ -143,7 +143,7 @@ def randomise_optimised():
     """
     Randomises the current piece of artwork, optimised for multiple"""
     random_art()
-    x = Image.open("assets/blank.png").resize((1000, 1000))
+    x = Image.open("./assets/blank.png").resize((1000, 1000))
     for i in l:
         a = Image.open(art_dict[i]).resize((1000, 1000))
         x.paste(a, (0, 0), a)
