@@ -141,7 +141,7 @@ def randomise():
 
 def randomise_optimised():
     """
-    Randomises the current piece of artwork, optimised"""
+    Randomises the current piece of artwork, optimised for multiple"""
     random_art()
     x = Image.open("assets/blank.png").resize((1000, 1000))
     for i in l:
