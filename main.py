@@ -29,7 +29,7 @@ for i in dl:
 
 
 for i in l:
-    d = f"/{i}"
+    d = f"{i}"
     dl = [
         os.path.join(d, o)
         for o in os.listdir(d)
